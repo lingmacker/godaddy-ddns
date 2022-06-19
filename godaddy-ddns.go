@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -166,18 +167,7 @@ func init() {
 			os.Exit(1)
 		}
 	}
-
-	// executablePath()
 }
-
-// func executablePath() {
-// 	ex, err := os.Executable()
-// 	if err != nil {
-// 		GoDaddyDDNSLogger(WarningLog, "", "", err.Error())
-// 	}
-// 	exPath := filepath.Dir(ex)
-// 	fmt.Println(exPath)
-// }
 
 func main() {
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
@@ -457,13 +447,7 @@ func getDNSRecord(name, domain, key, secret string) (string, error) {
 // }
 func getPubIP() (string, error) {
 
-	type GetIPBody struct {
-		IP string `json:"ip"`
-	}
-
-	var ipbody GetIPBody
-
-	response, err := http.Get("https://ipinfo.io/json")
+	response, err := http.Get("http://ddns.oray.com/checkip")
 	if err != nil {
 		return "", nil
 	}
@@ -471,17 +455,11 @@ func getPubIP() (string, error) {
 	defer response.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		// fmt.Println(err.Error())
 		return "", err
 	}
 
-	err = json.Unmarshal(bodyBytes, &ipbody)
-	if err != nil {
-		// fmt.Println(err.Error())
-		return "", err
-	}
-
-	return ipbody.IP, nil
+	ipString := string(bodyBytes)
+	return strings.Split(ipString, ": ")[1], nil
 
 }
 
